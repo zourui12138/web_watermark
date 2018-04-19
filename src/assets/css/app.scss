@@ -1,0 +1,95 @@
+html {
+    height: 100%;
+}
+body {
+    font-family: 'Avenir', Helvetica, Arial, sans-serif;
+    /*字体抗锯齿,使用后字体看起来会更清晰舒服*/
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    margin: 0;
+    padding: 0;
+    height: calc(100%);
+    max-width: 1640px;
+    background-color: #edeef2;
+    color: #606266;
+    font-size: 14px;
+}
+ul, ol, p, h1, h2, h3, h4, h5, h6, button, input {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    outline: none;
+}
+h1, h2, h3, h4, h5, h6 {
+    font-size: 16px;
+    font-weight: normal;
+}
+input, button {
+    outline: none;
+    border: none;
+}
+.fl {
+    float: left;
+}
+.fr {
+    float: right;
+}
+.clear:after {
+    content: '';
+    display: block;
+    clear: both;
+}
+.whiteBg{
+    background-color: #fff;
+    padding: 0 20px 20px;
+    margin-bottom: 20px;
+}
+.title{
+    height: 50px;
+    line-height: 50px;
+    border-bottom:1px solid #edeef2;
+    font-size: 16px;
+}
+// 步骤条
+.el-steps{
+    .el-step__icon{
+        width: 56px;
+        height: 56px;
+        background-color: #edeef2;
+        color: #fff;
+        border-color: #edeef2;
+        font-size: 24px;
+    }
+    .el-step.is-horizontal .el-step__line{
+        top: calc(50% - 1px);
+        background-color: #edeef2;
+    }
+    .el-step__head.is-finish{
+        .el-step__icon{
+            background-color: #5a8bff;
+            border-color: #5a8bff;
+        }
+    }
+    .el-step__title.is-process{
+        color: #606266;
+        font-weight: normal;
+    }
+}
+// 文件上传
+.el-upload-list--picture-card{
+    .el-upload-list__item{
+        vertical-align: top;
+        img{
+            vertical-align: top;
+        }
+    }
+}
+.el-upload--picture-card{
+    border: none;
+    width: 300px;
+    margin-bottom: 8px;
+    .el-upload-dragger{
+        height: 148px;
+        width: 300px;
+    }
+}
