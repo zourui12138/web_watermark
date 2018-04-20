@@ -14,6 +14,12 @@ Vue.use(ElementUI);
 import echarts from 'echarts'
 Vue.prototype.$echarts = echarts;
 
+// 引入时间解析器moment
+import moment from 'moment'
+Vue.filter('dataFormat', function (value) {
+    return moment(value).format('YYYY-MM-DD HH:mm:ss');
+});
+
 Vue.directive('scroll', {
     // 当组件完成一次更新时调用 还有其它的钩子函数 自行选择合适的
     componentUpdated:  (el) => {el.scrollTop = 0;}

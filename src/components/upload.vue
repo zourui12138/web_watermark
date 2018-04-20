@@ -5,11 +5,17 @@
         <section class="section">
             <el-upload
                 drag
-                action="https://jsonplaceholder.typicode.com/posts/"
+                ref="upload"
+                :limit="2"
+                multiple
+                :action="uploadUrl"
                 list-type="picture-card"
+                :auto-upload="isAuto"
+                :file-list="fileList"
                 :on-preview="handlePictureCardPreview"
                 :on-success="uploadSuccess"
                 :on-error="uploadError"
+                :on-change="uploadChange"
                 :on-remove="handleRemove">
                 <i class="el-icon-plus"></i>
             </el-upload>
@@ -28,7 +34,7 @@
             <el-table-column prop="raw.type" label="图片类型"></el-table-column>
             <el-table-column prop="raw.type" label="图片类型"></el-table-column>
             <el-table-column label="图片状态">
-                <template slot-scope="scope"><span>{{scope.row.status === 'success' ? '上传成功' : '上传中···'}}</span></template>
+                <template slot-scope="scope"><span>{{scope.row.status === 'success' ? '上传成功' : '等待上传'}}</span></template>
             </el-table-column>
         </el-table>
     </div>
@@ -37,27 +43,46 @@
 <script>
     export default {
         name: "upload",
-        props: ['uploadType'],
+        props: ['uploadType','isAuto','uploadUrl'],
         data() {
             return{
                 dialogImageUrl: '',
                 dialogVisible: false,
-                tableData: []
+                tableData: [],
+                fileList: []
             }
         },
         methods: {
+            // 删除文件
             handleRemove(file, fileList) {
-                console.log(file, fileList);
+                this.hasFile(fileList);
             },
+            // 预览文件
             handlePictureCardPreview(file) {
                 this.dialogImageUrl = file.url;
                 this.dialogVisible = true;
             },
+            // 文件上传成功的回调
             uploadSuccess(response,file,fileList) {
-                this.tableData = fileList;
+                response.message === 'SUCCESS' && this.$emit('watchSourceTableData',response.data);
             },
+            // 文件上传失败的回调
             uploadError() {
                 this.$message.error('文件上传失败');
+            },
+            // 文件列表change的回调
+            uploadChange(file,fileList) {
+                this.tableData = fileList;
+                this.hasFile(fileList);
+            },
+            // 在手动上传的时候监听文件列表是否存在文件
+            hasFile(fileList) {
+                !this.isAuto && this.$emit('watchStepOneDis',fileList.length === 0);
+            },
+            // 清空文件
+            clear() {
+                this.tableData = [];
+                this.$refs.upload.clearFiles();
             }
         }
     }

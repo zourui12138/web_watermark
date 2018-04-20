@@ -7,7 +7,7 @@
                     <section class="clear">
                         <img class="fl" src="../assets/img/file.png" alt="">
                         <div class="fl">
-                            <h1><span>592</span><strong></strong></h1>
+                            <h1><span>{{countData.total}}</span><strong></strong></h1>
                             <h2>总文件数</h2>
                         </div>
                     </section>
@@ -19,7 +19,7 @@
                     <section class="clear">
                         <img class="fl" src="../assets/img/data.png" alt="">
                         <div class="fl">
-                            <h1><span>2.4</span><strong>GB</strong></h1>
+                            <h1><span>{{countData.audioSize+countData.pictureSize}}</span><strong>GB</strong></h1>
                             <h2>总文件数</h2>
                         </div>
                     </section>
@@ -31,10 +31,10 @@
                     <section class="clear">
                         <img class="fl" src="../assets/img/dataPercent.png" alt="">
                         <div class="fl">
-                            <h1><span>2.4</span><strong>GB</strong><s>/</s><span>1.4</span><strong>GB</strong></h1>
+                            <h1><span>{{countData.pictureSize}}</span><strong>GB</strong><s>/</s><span>{{countData.audioSize}}</span><strong>GB</strong></h1>
                             <h2>图片/音频</h2>
                         </div>
-                        <div class="fr percent"><h3></h3></div>
+                        <div class="fr percent"><h3 :style="`width:${Proportion}%`"></h3></div>
                     </section>
                 </div>
             </el-col>
@@ -47,7 +47,7 @@
             <header class="title">水印文件调用记录</header>
             <div class="tableList">
                 <div class="search">
-                    <el-input class="callFile" placeholder="请输入内容" size="small"><template slot="prepend">调用文件</template></el-input>
+                    <el-input class="callFile" placeholder="请输入内容" v-model="searchValue" size="small"><template slot="prepend">调用文件</template></el-input>
                     <el-date-picker
                         class="dataPicker"
                         v-model="picker"
@@ -58,26 +58,37 @@
                         start-placeholder="开始日期"
                         end-placeholder="结束日期"
                         size="small"
+                        value-format="yyyy-MM-dd HH:mm:ss"
                         :picker-options="pickerOptions">
                     </el-date-picker>
-                    <el-button type="primary" size="small" icon="el-icon-search">搜索</el-button>
+                    <el-button type="primary" size="small" icon="el-icon-search" @click="search">搜索</el-button>
                 </div>
                 <el-table
                     :data="tableData"
                     :header-cell-style="{backgroundColor:'#edeef2'}"
                     style="width: 100%">
-                    <el-table-column prop="id" label="序号"></el-table-column>
-                    <el-table-column prop="date" label="调用时间"></el-table-column>
-                    <el-table-column prop="app" label="调用应用"></el-table-column>
-                    <el-table-column prop="file" label="调用文件"></el-table-column>
+                    <el-table-column prop="id" label="序号" width="180"></el-table-column>
+                    <el-table-column prop="time" label="调用时间"></el-table-column>
+                    <el-table-column prop="fileName" label="调用文件"></el-table-column>
+                    <el-table-column prop="localFile" label="本地路径"></el-table-column>
+                    <el-table-column prop="user" label="调用应用" width="100"></el-table-column>
                 </el-table>
-                <el-pagination class="page" background layout="prev, pager, next" :total="1000"></el-pagination>
+                <el-pagination
+                    class="page"
+                    background
+                    layout="prev, pager, next"
+                    :total="totalElements"
+                    :page-size="pageSize"
+                    @current-change="getTableData">
+                </el-pagination>
             </div>
         </div>
     </div>
 </template>
 
 <script>
+    import { statistics_getChartBar, statistics_getCount, statistics_getTableData } from '~/api/getData'
+
     export default {
         name: "statistics",
         data() {
@@ -114,18 +125,24 @@
                     ]
                 },
                 picker: null,
-                tableData: [
-                    {
-                        id: 1,
-                        date: '2018-04-19 23:59:59',
-                        app: '雄安通',
-                        file: 'logo.png'
-                    }
-                ]
+                tableData: [],
+                pageSize: 5,
+                totalElements: null,
+                countData: {},
+                Proportion: null,
+                searchValue: '',
+                start: '',
+                end: ''
             }
         },
         methods: {
-            chartBar() {
+            chartBar(data) {
+                let x = [],y_audio = [], y_picture = [];
+                for(let i=0;i<data.length;i++){
+                    x.push(data[i].date);
+                    y_audio.push(data[i].countAudio);
+                    y_picture.push(data[i].countPicture);
+                }
                 // 基于准备好的dom，初始化echarts实例
                 let myChart = this.$echarts.init(this.$refs.bar);
                 // 图表配置项
@@ -151,7 +168,7 @@
                     xAxis : [
                         {
                             type : 'category',
-                            data : ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月']
+                            data : x
                         }
                     ],
                     yAxis : [
@@ -163,7 +180,7 @@
                         {
                             name:'图片',
                             type:'bar',
-                            data:[2.0, 4.9, 7.0, 23.2, 25.6, 76.7, 135.6, 162.2, 32.6, 20.0, 6.4, 3.3],
+                            data:y_picture,
                             markPoint : {
                                 data : [
                                     {type : 'max', name: '最大值'}
@@ -178,7 +195,7 @@
                         {
                             name:'音频',
                             type:'bar',
-                            data:[2.6, 5.9, 9.0, 26.4, 28.7, 70.7, 175.6, 182.2, 48.7, 18.8, 6.0, 2.3],
+                            data:y_audio,
                             markPoint : {
                                 data : [
                                     {type : 'max', name: '最大值'}
@@ -194,10 +211,31 @@
                 };
                 // 绘制图表
                 myChart.setOption(option);
+            },
+            async getChartBar() {
+                let data = await statistics_getChartBar();
+                this.chartBar(data.data.data.reverse());
+            },
+            async getCount() {
+                let data = await statistics_getCount();
+                this.countData = data.data.data;
+                this.Proportion = parseFloat((data.data.data.pictureSize/(data.data.data.pictureSize+data.data.data.audioSize)).toFixed(2))*100;
+            },
+            async getTableData(page) {
+                let data = await statistics_getTableData(page,this.pageSize,this.searchValue,this.start,this.end);
+                this.tableData = data.data.data.content;
+                this.totalElements = data.data.data.totalElements;
+            },
+            search() {
+                this.start = this.picker ? this.picker[0] : '';
+                this.end = this.picker ? this.picker[1] : '';
+                this.getTableData(1);
             }
         },
         mounted() {
-            this.chartBar();
+            this.getTableData(1);
+            this.getChartBar();
+            this.getCount();
         }
     }
 </script>
@@ -247,7 +285,7 @@
                     h3{
                         height: 12px;
                         background-color: #23c6c8;
-                        width: calc(50%);
+                        width: 0;
                     }
                 }
             }
